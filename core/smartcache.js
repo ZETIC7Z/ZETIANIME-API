@@ -2,10 +2,14 @@ export const _CACHE_ENABLED = false; //change it to true and setup your upstash 
 
 const IS_LOCAL_NODE = (() => {
   try {
+    // Must be Node.js, not Vercel serverless, not Cloudflare Workers
+    // import.meta.url must be a real file:// URL (undefined in CF Workers)
     return (
       typeof process !== "undefined" &&
       typeof process.versions?.node === "string" &&
-      !process.env.VERCEL
+      !process.env.VERCEL &&
+      typeof import.meta.url === "string" &&
+      import.meta.url.startsWith("file://")
     );
   } catch { return false; }
 })();
