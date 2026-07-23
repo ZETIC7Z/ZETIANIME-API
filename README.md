@@ -1,5 +1,9 @@
 <div align="center">
 
+
+<img src="docs/logo.svg" width="80" height="80"/>
+
+
 # Anivexa API 2.2
 
 **Anime streaming aggregator API — one endpoint, all your sources.**
@@ -33,7 +37,8 @@ It's the backbone powering **[Anivexa](https://github.com/walterwhite-69/Anivexa
 | **AniDB App** | ✅ Active | Language-aware, AniDB ID backed |
 | **AniZone** | ✅ Active | HLS + subtitles, sub-only; year-based re-scoring prevents wrong-season matches |
 | **2dhive** | ✅ Active | Uses MAL ID internally; AniList ID used everywhere else |
-| **Anidb** | ✅ Active | Uses Anilist ID internally; AniList ID used everywhere else |
+| **Anibd** | ✅ Active | Uses Anilist ID internally; AniList ID used everywhere else |
+| **Kickassanime** | ✅ Active | Fuzzy search, medium library |
 
 ---
 
