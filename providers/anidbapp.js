@@ -17,6 +17,8 @@ const execFileAsync = promisify(execFile);
 const BASE = "https://anidb.app";
 const UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36";
 const COOKIE_JAR = "/tmp/anidbapp_cookies.txt";
+// Cloudflare Worker proxy — fallback when Vercel IPs get blocked by anidb.app
+const PROXY = "https://anidb-proxy.samxerz-zeticuz.workers.dev";
 
 const NAV_HEADERS = [
   "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
@@ -69,12 +71,29 @@ async function curlFetch(url, headers, extraArgs = []) {
 
 async function fetchAnidbHtml(url, referer) {
   const headers = referer ? [...NAV_HEADERS, `Referer: ${referer}`] : NAV_HEADERS;
-  return curlFetch(url, headers);
+  // Try direct curl first; if it fails (e.g. Vercel IP blocked), fall through proxy
+  try {
+    return await curlFetch(url, headers);
+  } catch (err) {
+    if (!PROXY) throw err;
+    const proxyUrl = `${PROXY}?url=${encodeURIComponent(url)}&ref=${encodeURIComponent(referer ?? BASE + "/")}`;
+    const res = await fetch(proxyUrl);
+    if (!res.ok) throw new Error(`Proxy HTTP ${res.status} for ${url}`);
+    return await res.text();
+  }
 }
 
 async function fetchXhr(url, referer) {
   const headers = referer ? [...XHR_HEADERS, `Referer: ${referer}`] : XHR_HEADERS;
-  return curlFetch(url, headers);
+  try {
+    return await curlFetch(url, headers);
+  } catch (err) {
+    if (!PROXY) throw err;
+    const proxyUrl = `${PROXY}?url=${encodeURIComponent(url)}&ref=${encodeURIComponent(referer ?? BASE + "/")}`;
+    const res = await fetch(proxyUrl, { headers: { "X-Requested-With": "XMLHttpRequest" } });
+    if (!res.ok) throw new Error(`Proxy HTTP ${res.status} for ${url}`);
+    return await res.text();
+  }
 }
 
 async function fetchJson(url, referer) {
